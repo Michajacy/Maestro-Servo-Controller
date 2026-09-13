@@ -1,6 +1,7 @@
 from typing import Optional
 
 class Servo:
+    """Represents individual servo"""
     def __init__(self, channel: int, name: str, intial_position: int = 1500) -> None:
         self.channel = channel
         self.name = name
@@ -8,13 +9,14 @@ class Servo:
 
 
 class ServoManager:
+    """Assigns channels and communicates with servos"""
     def __init__(self, hardware_interface, max_channels: int = 24) -> None:
         self.hw = hardware_interface
         self.max_channels = max_channels
         self.servos = {} 
 
     def add_servo(self, name: str) -> Optional['Servo']:
-        """finds first free channel and adds new servo"""
+        """finds first free channel and adds new servo. Returns None when no channel is free"""
         for ch in range(self.max_channels):
             if ch not in self.servos:
                 new_servo = Servo(channel=ch, name=name)
@@ -27,11 +29,13 @@ class ServoManager:
         return None
 
     def remove_servo(self, channel: int) -> None:
+        """removes servo from manager"""
         if channel in self.servos:
             self.hw.set_target(channel, 0)
             del self.servos[channel]
 
     def set_servo_position(self, channel: int, position: int) -> None:
+        """Updates servo's position and sends it to device"""
         if channel in self.servos:
             self.servos[channel].position = position
             self.hw.set_target(channel, position)
