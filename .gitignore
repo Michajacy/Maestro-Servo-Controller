@@ -1,0 +1,14 @@
+venv/
+env/
+.env
+
+pychache/
+*.py[cod]
+*$py.class
+
+build/
+dist/
+*.spec
+
+.vscode/
+.idea/
