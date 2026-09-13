@@ -1,3 +1,140 @@
-import logging
+import tkinter as tk
+from tkinter import ttk, messagebox
+from hardware import MockMaestroController
+from domain import ServoManager
 
-class MaestroApp:
+class ServoWindow(tk.Toplevel):
+    "floating window to menage single servo"
+
+    def __init__(self, parent, servo, manager) -> None:
+        super().__init__(parent)
+        self.servo = servo
+        self.manager = manager
+        self.title(self.servo.name)
+        self.geometry("250x150") #imo poorly defined
+        self.resizable(False, False)
+        self.eval('tk::PlaceWindow . center')
+
+        self.protocol("WM_DELETE_WINDOW", self.hide_window)
+
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+
+        #frame for buttons L/R
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(pady=15) #poorly defined
+
+        self.btn_left = ttk.Button(btn_frame, text="<-", command=self.step_left)
+        self.btn_left.pack(side=tk.LEFT, padx=5) #poorly defined padding
+
+        self.btn_right = ttk.Button(btn_frame, text="->", command=self.step_right)
+        self.btn_right.pack(side=tk.RIGHT, padx=5) #poorly defined padding
+
+        self.lbl_position = ttk.Label(self, text=f"Position: {self.servo.position} us")
+        self.lbl_position.pack()
+
+        self.slider = ttk.Scale(
+            self, from_=1000, to=2000, orient=tk.HORIZONTAL, length=200, command=self.on_slider_move
+        ) # magic values
+        self.slider.set(self.servo.position)
+        self.slider.pack(pady=5) #magic value
+
+    def on_slider_move(self, value) -> None:
+        pos = int(float(value))
+        self.lbl_position.config(text=f"Position: {pos} us")
+        self.manager.set_servo_position(self.servo.channel, pos)
+
+    def step_left(self) -> None:
+        current = self.slider.get()
+        new_pos = max(1000, current - 50) #magic values
+        self.slider.set(new_pos)
+
+    def step_right(self) -> None:
+        current = self.slider.get()
+        new_pos = min(2000, current + 50) #magic values
+        self.slider.set(new_pos)
+
+    def hide_window(self) -> None:
+        self.withdraw()
+
+    def show_window(self) -> None:
+        self.deiconify()
+        self.lift()
+        self.focus_force()
+
+
+
+class MainWindow(tk.Tk):
+
+    def __init__(self, manager: ServoManager) -> None:
+        super().__init__()
+        self.manager = manager
+        self.servo_windows = {}
+
+        self.title("Servo Settings") #poorly defined
+        self.geometry("300x400") #poorly defined
+
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        header_frame = ttk.Frame(self)
+        header_frame.pack(fill=tk.X, padx=10, pady=10) #magic values
+
+        btn_add = ttk.Button(header_frame, text="+ Add servo", command=self.add_servo_ui)
+        btn_add.pack(side=tk.LEFT)
+
+        ttk.Label(self, text="Active servos:").pack(anchor=tk.W, padx=10)
+
+
+        self.list_frame = ttk.Frame(self)
+        self.list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5) #magic values
+
+
+    def add_servo_ui(self) -> None:
+        count = len(self.manager.servos) + 1
+        name = f"Servo {count} name"
+
+        new_servo = self.manager.add_servo(name)
+
+        if new_servo is None:
+            messagebox.showwarning("No free channels", "All channesl occupied")
+            return
+
+        row_frame = ttk.Frame(self.list_frame, relief=tk.SOLID, borderwidth=1) #magic value
+        row_frame.pack(fill=tk.X, pady=2) #magic value
+
+        lbl = ttk.Label(row_frame, text=new_servo.name, cursor="hand2") #poorly defined
+        lbl.pack(side=tk.LEFT, padx=5, pady=5) #magic values
+        lbl.bind("Double-1", lambda event, ch=new_servo.channel: self.show_servo_window(ch))
+
+        btn_del = ttk.Button(row_frame, text="X", width=3, command=lambda ch=new_servo.channel, frame=row_frame: self.delete_servo_ui(ch, frame))
+        btn_del.pack(side=tk.RIGHT, padx=5, pady=5) #magic values
+
+        sw = ServoWindow(self, new_servo, self.manager)
+        self.servo_windows[new_servo.channel] = sw
+
+
+    def show_servo_window(self, channel: int) -> None:
+        if channel in self.servo_windows:
+            self.servo_windows[channel].show_window()
+
+
+    def delete_servo_ui(self, channel: int, row_frame: ttk.Frame) -> None:
+        self.manager.remove_servo(channel)
+
+        if channel in self.servo_windows:
+            self.servo_windows[channel].destroy()
+            del self.servo_windows[channel]
+
+        row_frame.destroy()
+
+
+
+if __name__ == "__main__":
+    hardware = MockMaestroController()
+
+    manager = ServoManager(hardware_interface=hardware, max_channels=24) #magic value
+
+    app = MainWindow(manager)
+    app.mainloop()
