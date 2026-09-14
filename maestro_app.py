@@ -11,13 +11,32 @@ class ServoWindow(tk.Toplevel):
         self.servo = servo
         self.manager = manager
         self.title(self.servo.name)
-        self.geometry("250x150") #imo poorly defined
+
+        win_width = 250
+        win_height = 150
+        self.geometry(f"{win_width}x{win_height}") #imo poorly defined
         self.resizable(False, False)
-        self.eval('tk::PlaceWindow . center')
 
         self.protocol("WM_DELETE_WINDOW", self.hide_window)
 
         self._build_ui()
+
+        self._center_on_parent(win_width, win_height)
+
+    def _center_on_parent(self, width: int, height: int) -> None:
+        """Centers the child window over the parent window"""
+
+        self.update_idletasks()
+
+        parent_x = self.master.winfo_x()
+        parent_y = self.master.winfo_y()
+        parent_width = self.master.winfo_width()
+        parent_height = self.master.winfo_height()
+
+        pos_x = parent_x + (parent_width // 2) - (width // 2)
+        pos_y = parent_y + (parent_height // 2) - (height // 2)
+
+        self.geometry(f"+{pos_x}+{pos_y}")
 
     def _build_ui(self) -> None:
 
@@ -106,7 +125,7 @@ class MainWindow(tk.Tk):
 
         lbl = ttk.Label(row_frame, text=new_servo.name, cursor="hand2") #poorly defined
         lbl.pack(side=tk.LEFT, padx=5, pady=5) #magic values
-        lbl.bind("Double-1", lambda event, ch=new_servo.channel: self.show_servo_window(ch))
+        lbl.bind("<Double-1>", lambda event, ch=new_servo.channel: self.show_servo_window(ch))
 
         btn_del = ttk.Button(row_frame, text="X", width=3, command=lambda ch=new_servo.channel, frame=row_frame: self.delete_servo_ui(ch, frame))
         btn_del.pack(side=tk.RIGHT, padx=5, pady=5) #magic values
