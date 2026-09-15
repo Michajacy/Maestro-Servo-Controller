@@ -91,22 +91,32 @@ class MainWindow(tk.Tk):
         self.manager = manager
         self.servo_windows = {}
 
-        self.title("Servo Settings") #poorly defined
+        self.title("Maestro App") #poorly defined
         self.geometry("300x400") #poorly defined
 
         self._build_ui()
 
     def _build_ui(self) -> None:
-        header_frame = ttk.Frame(self)
+        self.notebook = ttk.Notebook(self)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5) #magic values
+        self.tab_servo = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab_servo, text="Servo settings") # poorly defined
+
+        #header_frame = ttk.Frame(self)
+
+        header_frame = ttk.Frame(self.tab_servo)
         header_frame.pack(fill=tk.X, padx=10, pady=10) #magic values
 
         btn_add = ttk.Button(header_frame, text="+ Add servo", command=self.add_servo_ui)
-        btn_add.pack(side=tk.LEFT)
+        btn_add.pack(side=tk.RIGHT)
 
-        ttk.Label(self, text="Active servos:").pack(anchor=tk.W, padx=10)
+        separator = ttk.Separator(self.tab_servo, orient="horizontal") #poorly defined
+        separator.pack(fill=tk.X, padx=10, pady=5) #magic values
 
+        ttk.Label(self.tab_servo, text="Active servos:").pack(anchor=tk.W, padx=10)
 
-        self.list_frame = ttk.Frame(self)
+        #self.list_frame = ttk.Frame(self)
+        self.list_frame = ttk.Frame(self.tab_servo)
         self.list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5) #magic values
 
 
