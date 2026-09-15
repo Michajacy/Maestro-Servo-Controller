@@ -21,7 +21,6 @@ class ServoWindow(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.hide_window)
 
         self._build_ui()
-
         self._center_on_parent(win_width, win_height)
 
     def _center_on_parent(self, width: int, height: int) -> None:
@@ -54,12 +53,8 @@ class ServoWindow(tk.Toplevel):
         self.lbl_position = ttk.Label(self, text=f"Position: {self.servo.position} us")
         self.lbl_position.pack()
 
-        min_val = self.parent.min_var.get()
-        max_val = self.parent.max_var.get()
-
-
         self.slider = ttk.Scale(
-            self, from_=min_val, to=max_val, orient=tk.HORIZONTAL, length=200, command=self.on_slider_move
+            self, from_=self.servo.min_val, to=self.servo.max_val, orient=tk.HORIZONTAL, length=200, command=self.on_slider_move
         ) # magic values
         self.slider.set(self.servo.position)
         self.slider.pack(pady=5) #magic value
@@ -71,15 +66,15 @@ class ServoWindow(tk.Toplevel):
 
     def step_left(self) -> None:
         current = self.slider.get()
-        min_val = self.parent.min_var.get()
-        step = self.parent.step_var.get()
+        min_val = self.servo.min_val
+        step = self.servo.step
         new_pos = max(min_val, current - step) #magic values
         self.slider.set(new_pos)
 
     def step_right(self) -> None:
         current = self.slider.get()
-        max_val = self.parent.max_var.get()
-        step = self.parent.step_var.get()
+        max_val = self.servo.max_val
+        step = self.servo.step
         new_pos = min(max_val, current + step) #magic values
         self.slider.set(new_pos)
 
@@ -108,6 +103,7 @@ class MainWindow(tk.Tk):
         self.max_var = tk.IntVar(value=2000)
 
         self._build_ui()
+        self._load_servos()
 
     def _build_ui(self) -> None:
         settings_group = ttk.LabelFrame(self, text="Servo settings")
@@ -145,18 +141,31 @@ class MainWindow(tk.Tk):
             messagebox.showwarning("No free channels", "All channesl occupied")
             return
 
+        new_servo.step = self.step_var.get()
+        new_servo.min_val = self.min_var.get()
+        new_servo.max_val = self.max_var.get()
+        self.manager._save_config()
+
+        self._create_servo_row(new_servo)
+
+    def _create_servo_row(self, servo) -> None:
+
         row_frame = ttk.Frame(self.list_frame, relief=tk.SOLID, borderwidth=1) #magic value
         row_frame.pack(fill=tk.X, pady=2) #magic value
 
-        lbl = ttk.Label(row_frame, text=new_servo.name, cursor="hand2") #poorly defined
+        lbl = ttk.Label(row_frame, text=servo.name, cursor="hand2") #poorly defined
         lbl.pack(side=tk.LEFT, padx=5, pady=5) #magic values
-        lbl.bind("<Double-1>", lambda event, ch=new_servo.channel: self.show_servo_window(ch))
+        lbl.bind("<Double-1>", lambda event, ch=servo.channel: self.show_servo_window(ch))
 
-        btn_del = ttk.Button(row_frame, text="X", width=3, command=lambda ch=new_servo.channel, frame=row_frame: self.delete_servo_ui(ch, frame))
+        btn_del = ttk.Button(row_frame, text="X", width=3, command=lambda ch=servo.channel, frame=row_frame: self.delete_servo_ui(ch, frame))
         btn_del.pack(side=tk.RIGHT, padx=5, pady=5) #magic values
 
-        sw = ServoWindow(self, new_servo, self.manager)
-        self.servo_windows[new_servo.channel] = sw
+        sw = ServoWindow(self, servo, self.manager)
+        self.servo_windows[servo.channel] = sw
+
+    def _load_servos(self) -> None:
+        for _, servo in self.manager.servos.items():
+            self._create_servo_row(servo)
 
 
     def show_servo_window(self, channel: int) -> None:
