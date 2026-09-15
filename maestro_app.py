@@ -8,6 +8,7 @@ class ServoWindow(tk.Toplevel):
 
     def __init__(self, parent, servo, manager) -> None:
         super().__init__(parent)
+        self.parent = parent
         self.servo = servo
         self.manager = manager
         self.title(self.servo.name)
@@ -53,8 +54,12 @@ class ServoWindow(tk.Toplevel):
         self.lbl_position = ttk.Label(self, text=f"Position: {self.servo.position} us")
         self.lbl_position.pack()
 
+        min_val = self.parent.min_var.get()
+        max_val = self.parent.max_var.get()
+
+
         self.slider = ttk.Scale(
-            self, from_=1000, to=2000, orient=tk.HORIZONTAL, length=200, command=self.on_slider_move
+            self, from_=min_val, to=max_val, orient=tk.HORIZONTAL, length=200, command=self.on_slider_move
         ) # magic values
         self.slider.set(self.servo.position)
         self.slider.pack(pady=5) #magic value
@@ -66,12 +71,16 @@ class ServoWindow(tk.Toplevel):
 
     def step_left(self) -> None:
         current = self.slider.get()
-        new_pos = max(1000, current - 50) #magic values
+        min_val = self.parent.min_var.get()
+        step = self.parent.step_var.get()
+        new_pos = max(min_val, current - step) #magic values
         self.slider.set(new_pos)
 
     def step_right(self) -> None:
         current = self.slider.get()
-        new_pos = min(2000, current + 50) #magic values
+        max_val = self.parent.max_var.get()
+        step = self.parent.step_var.get()
+        new_pos = min(max_val, current + step) #magic values
         self.slider.set(new_pos)
 
     def hide_window(self) -> None:
@@ -94,30 +103,36 @@ class MainWindow(tk.Tk):
         self.title("Maestro App") #poorly defined
         self.geometry("300x400") #poorly defined
 
+        self.step_var = tk.IntVar(value=50)
+        self.min_var = tk.IntVar(value=1000)
+        self.max_var = tk.IntVar(value=2000)
+
         self._build_ui()
 
     def _build_ui(self) -> None:
-        self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5) #magic values
-        self.tab_servo = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_servo, text="Servo settings") # poorly defined
+        settings_group = ttk.LabelFrame(self, text="Servo settings")
+        settings_group.pack(fill=tk.X, padx=10, pady=10)
 
-        #header_frame = ttk.Frame(self)
+        config_frame = ttk.Frame(settings_group)
+        config_frame.pack(side=tk.LEFT, padx=10, pady=5)
 
-        header_frame = ttk.Frame(self.tab_servo)
-        header_frame.pack(fill=tk.X, padx=10, pady=10) #magic values
+        ttk.Label(config_frame, text="Jog Step (us):").grid(row=0, column=0, sticky=tk.W, pady=2)
+        ttk.Entry(config_frame, textvariable=self.step_var, width=8).grid(row=0, column=1, padx=5, pady=2)
 
-        btn_add = ttk.Button(header_frame, text="+ Add servo", command=self.add_servo_ui)
-        btn_add.pack(side=tk.RIGHT)
+        ttk.Label(config_frame, text="Min Pos:").grid(row=1, column=0, sticky=tk.W, pady=2)
+        ttk.Entry(config_frame, textvariable=self.min_var, width=8).grid(row=1, column=1, padx=5, pady=2)
 
-        separator = ttk.Separator(self.tab_servo, orient="horizontal") #poorly defined
-        separator.pack(fill=tk.X, padx=10, pady=5) #magic values
+        ttk.Label(config_frame, text="Max Pos:").grid(row=2, column=0, sticky=tk.W, pady=2)
+        ttk.Entry(config_frame, textvariable=self.max_var, width=8).grid(row=2, column=1, padx=5, pady=2)
 
-        ttk.Label(self.tab_servo, text="Active servos:").pack(anchor=tk.W, padx=10)
+        btn_add = ttk.Button(settings_group, text="+ Add servo", command=self.add_servo_ui)
+        btn_add.pack(side=tk.RIGHT, padx=10)
 
-        #self.list_frame = ttk.Frame(self)
-        self.list_frame = ttk.Frame(self.tab_servo)
-        self.list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5) #magic values
+        list_group = ttk.LabelFrame(self, text="Active servos")
+        list_group.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        self.list_frame = ttk.Frame(list_group)
+        self.list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
 
     def add_servo_ui(self) -> None:
