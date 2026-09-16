@@ -8,7 +8,7 @@
     },
     "1": {
         "name": "Servo 2",
-        "position": 1500,
+        "position": 1450,
         "step": 50,
         "min_val": 1000,
         "max_val": 2000
