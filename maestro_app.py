@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import logging
 from hardware import MockMaestroController
 from domain import ServoManager
 
@@ -185,6 +186,7 @@ class MainWindow(tk.Tk):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
     hardware = MockMaestroController()
 
     manager = ServoManager(hardware_interface=hardware, max_channels=24) #magic value
