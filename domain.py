@@ -58,9 +58,9 @@ class ServoManager:
 
                     new_servo = Servo(ch, name, pos, step, min_val, max_val)
                     self.servos[ch] = new_servo
-                    self.hw.set_target(ch, pos)
+                    
 
-            except:
+            except(json.JSONDecodeError, ValueError):
                 pass #ignore errors caused by damaged file
 
     def add_servo(self, name: str) -> Optional['Servo']:

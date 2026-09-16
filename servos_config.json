@@ -1,14 +1,14 @@
 {
     "0": {
-        "name": "Servo 1 name",
-        "position": 1800,
+        "name": "abra kadabra",
+        "position": 1600,
         "step": 50,
         "min_val": 1000,
         "max_val": 2000
     },
     "1": {
-        "name": "Servo 2 name",
-        "position": 1700,
+        "name": "Servo 2",
+        "position": 1500,
         "step": 50,
         "min_val": 1000,
         "max_val": 2000
