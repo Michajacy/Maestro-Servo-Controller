@@ -68,7 +68,7 @@ class ServoWindow(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.hide_window)
 
         self._build_ui()
-        self._center_on_parent(SERVO_WIN_W, SERVO_WIN_H)
+
 
     def _center_on_parent(self, width: int, height: int) -> None:
         """Centers the child window over the parent window."""
@@ -133,12 +133,12 @@ class ServoWindow(tk.Toplevel):
 
     def show_window(self) -> None:
         """Brings the window back to the front."""
+        self._center_on_parent(SERVO_WIN_W, SERVO_WIN_H)
         self.deiconify()
         self.lift()
         self.focus_force()
 
 
-# STREAMING_CHUNK: Defining main application window class
 class MainWindow(tk.Tk):
     """Main application window for managing multiple servos."""
 
@@ -209,10 +209,33 @@ class MainWindow(tk.Tk):
         list_group = ttk.LabelFrame(self, text=TXT_GROUP_LIST)
         list_group.pack(fill=tk.BOTH, expand=True, padx=PAD_M, pady=PAD_S)
 
-        self.list_frame = ttk.Frame(list_group)
-        self.list_frame.pack(fill=tk.BOTH, expand=True, padx=PAD_M, pady=PAD_S)
+        self.canvas = tk.Canvas(list_group, highlightthickness=0)
+        self.scrollbar = ttk.Scrollbar(list_group, orient=tk.VERTICAL, command=self.canvas.yview)
 
-# STREAMING_CHUNK: Implementing servo state management
+        self.list_frame = tk.Frame(self.canvas)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.canvas_frame_id = self.canvas.create_window((0, 0), window=self.list_frame, anchor="nw")
+
+        self.list_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+
+        self.canvas.bind(
+            "<Configure>",
+            lambda e: self.canvas.itemconfig(self.canvas_frame_id, width=e.width)
+        )
+
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _on_mousewheel(self, event) -> None:
+        """Handles mouse wheel scrolling inside the canvas."""
+        self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
     def add_servo_ui(self) -> None:
         """Handles adding a new servo based on UI form data."""
         name = self.name_var.get()
@@ -222,7 +245,7 @@ class MainWindow(tk.Tk):
         new_servo = self.manager.add_servo(name)
 
         if new_servo is None:
-            messagebox.showwarning(MSG_WARN_TITLE, MSG_WARN_TEXT)
+            messagebox.showwarning(MSG_WARN_TITLE, MSG_WARN_TEXT, parent=self)
             return
 
         new_servo.step = self.step_var.get()
@@ -237,7 +260,7 @@ class MainWindow(tk.Tk):
     def update_servo(self) -> None:
         """Saves modifications made to the currently selected servo."""
         if self.selected_channel is None:
-            messagebox.showinfo(MSG_INFO_TITLE, MSG_INFO_SELECT)
+            messagebox.showinfo(MSG_INFO_TITLE, MSG_INFO_SELECT, parent=self)
             return
 
         base_name = self.name_var.get()
@@ -261,13 +284,15 @@ class MainWindow(tk.Tk):
         servo.min_val = self.min_var.get()
         servo.max_val = self.max_var.get()
 
+        self.name_var.set(unique_name)
+
         self.row_widgets[self.selected_channel]['label'].config(text=servo.name)
         if self.selected_channel in self.servo_windows:
             self.servo_windows[self.selected_channel].title(servo.name)
 
         # pylint: disable=protected-access
         self.manager._save_config()
-        messagebox.showinfo(MSG_SAVE_TITLE, MSG_SAVE_TEXT.format(servo.name))
+        messagebox.showinfo(MSG_SAVE_TITLE, MSG_SAVE_TEXT.format(servo.name), parent=self)
 
     def _create_servo_row(self, servo) -> None:
         """Creates a visual row for a servo in the list."""
