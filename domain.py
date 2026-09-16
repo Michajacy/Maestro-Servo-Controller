@@ -74,9 +74,24 @@ class ServoManager:
         Finds the first free channel and adds a new servo.
         Returns None when no channel is free.
         """
+
+        existing_names = [servo.name for servo in self.servos.values()]
+
+        core_name = name
+        counter = 1
+        parts = name.rsplit(' ', 1)
+        if len(parts) == 2 and parts[1].isdigit():
+            core_name = parts[0]
+            counter = int(parts[1])
+
+        unique_name = name
+        while unique_name in existing_names:
+            unique_name = f"{core_name} {counter}"
+            counter +=1
+
         for ch_id in range(self.max_channels):
             if ch_id not in self.servos:
-                new_servo = Servo(channel=ch_id, name=name)
+                new_servo = Servo(channel=ch_id, name=unique_name)
                 self.servos[ch_id] = new_servo
 
                 # Set starting position

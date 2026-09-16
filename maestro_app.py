@@ -240,8 +240,23 @@ class MainWindow(tk.Tk):
             messagebox.showinfo(MSG_INFO_TITLE, MSG_INFO_SELECT)
             return
 
+        base_name = self.name_var.get()
+        existing_names = [s.name for ch_id, s in self.manager.servos.items() if ch_id !=
+                          self.selected_channel]
+        core_name = base_name
+        counter = 1
+        parts = base_name.rsplit(' ', 1)
+        if len(parts) == 2 and parts[1].isdigit():
+            core_name = parts[0]
+            counter = int(parts[1])
+
+        unique_name = base_name
+        while unique_name in existing_names:
+            unique_name = f"{core_name} {counter}"
+            counter += 1
+
         servo = self.manager.servos[self.selected_channel]
-        servo.name = self.name_var.get()
+        servo.name = unique_name
         servo.step = self.step_var.get()
         servo.min_val = self.min_var.get()
         servo.max_val = self.max_var.get()
