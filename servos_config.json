@@ -1,0 +1,16 @@
+{
+    "0": {
+        "name": "Servo 1 name",
+        "position": 1800,
+        "step": 50,
+        "min_val": 1000,
+        "max_val": 2000
+    },
+    "1": {
+        "name": "Servo 2 name",
+        "position": 1700,
+        "step": 50,
+        "min_val": 1000,
+        "max_val": 2000
+    }
+}
