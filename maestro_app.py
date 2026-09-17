@@ -62,7 +62,7 @@ class ServoWindow(tk.Toplevel):
             from_=self.servo.min_val,
             to=self.servo.max_val,
             orient=tk.HORIZONTAL,
-            length=config.W_SLIDER
+            length=config.SLIDER_W
         )
         self.slider.set(self.servo.position)
         self.slider.config(command=self.on_slider_move)
@@ -139,13 +139,13 @@ class MainWindow(tk.Tk):
         top_frame = ttk.Frame(self)
         top_frame.pack(fill=tk.X, padx=config.PAD_M, pady=(config.PAD_M, 0))
 
-        ttk.Label(top_frame, text="Hardware Interface:").pack(side=tk.LEFT)
+        ttk.Label(top_frame, text=config.COMBO_TXT).pack(side=tk.LEFT)
         hw_cb = ttk.Combobox(
             top_frame,
             textvariable=self.hw_var,
-            values=["Mock", "Serial"],
-            state="readonly",
-            width=10
+            values=config.COMBO_VALUES,
+            state=config.COMBO_STATE,
+            width=config.COMBO_W
         )
         hw_cb.pack(side=tk.LEFT, padx=config.PAD_S)
         hw_cb.bind("<<ComboboxSelected>>", self.on_hw_changed)
@@ -224,6 +224,34 @@ class MainWindow(tk.Tk):
         """Handles mouse wheel scrolling inside the canvas."""
         self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
+    def _validate_servo_inputs(self) -> bool:
+        """Validates numeric inputs. Returns True if valid, False otherwise."""
+        try:
+            step = self.step_var.get()
+            min_val = self.min_var.get()
+            max_val = self.max_var.get()
+        except tk.TclError:
+            messagebox.showerror(config.MSG_ERR_VAL_TITLE, config.MSG_ERR_VAL_INT, parent=self)
+            return False
+
+        if step <= 0:
+            messagebox.showerror(config.MSG_ERR_VAL_TITLE, config.MSG_ERR_VAL_STEP, parent=self)
+            return False
+
+        if min_val < 0 or max_val < 0:
+            messagebox.showerror(config.MSG_ERR_VAL_TITLE, config.MSG_ERR_VAL_NEG, parent=self)
+            return False
+
+        if min_val >= max_val:
+            messagebox.showerror(config.MSG_ERR_VAL_TITLE, config.MSG_ERR_VAL_MINMAX, parent=self)
+            return False
+
+        if max_val > 10000:
+            messagebox.showerror(config.MSG_ERR_VAL_TITLE, config.MSG_ERR_VAL_LARGE, parent=self)
+            return False
+
+        return True
+
     def on_hw_changed(self, _) -> None:
         """Handles switching between physical Serial port and Virtual Mock."""
         new_mode = self.hw_var.get()
@@ -263,6 +291,9 @@ class MainWindow(tk.Tk):
         """Saves modifications made to the currently selected servo."""
         if self.selected_channel is None:
             messagebox.showinfo(config.MSG_INFO_TITLE, config.MSG_INFO_SELECT, parent=self)
+            return
+
+        if not self._validate_servo_inputs():
             return
 
         base_name = self.name_var.get()

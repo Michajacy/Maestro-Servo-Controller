@@ -12,7 +12,7 @@ PAD_XS = 2
 PAD_S = 5
 PAD_M = 10
 PAD_L = 15
-W_SLIDER = 200
+SLIDER_W = 200
 COLOR_SELECTED = "#97B7F8"
 COLOR_DEFAULT = "#FFFFFF"
 
@@ -31,6 +31,12 @@ TXT_BTN_DEL = "X"
 TXT_BTN_LEFT = "<-"
 TXT_BTN_RIGHT = "->"
 
+#UI Constants - ComboBox
+COMBO_W = 10
+COMBO_STATE = "readonly"
+COMBO_VALUES = ["Mock", "Serial"]
+COMBO_TXT = "Hardware Interface:"
+
 # UI Constants - Messages
 MSG_WARN_TITLE = "No free channels"
 MSG_WARN_TEXT = "All channels occupied."
@@ -38,6 +44,12 @@ MSG_INFO_TITLE = "Info"
 MSG_INFO_SELECT = "Select a servo from the list first."
 MSG_SAVE_TITLE = "Saved"
 MSG_SAVE_TEXT = "Configuration for '{}' saved!"
+MSG_ERR_VAL_TITLE = "Validation Error"
+MSG_ERR_VAL_INT = "Numeric fields cannot be empty and must be valid integers."
+MSG_ERR_VAL_STEP = "Jog Step must be strictly greater than 0."
+MSG_ERR_VAL_NEG = "Position limits cannot be negative."
+MSG_ERR_VAL_MINMAX = "Min Pos must be strictly less than Max Pos."
+MSG_ERR_VAL_LARGE = "Max Pos is too large (maximum allowed is 10000 us)."
 
 # Servo Defaults
 SERVO_DEF_NAME = "New Servo"
