@@ -8,12 +8,12 @@ Aplikacja umożliwia:
 - Konfigurację parametrów dla każdego serwa z osobna (Nazwa, Jog Step, Limity Min/Max).
 - Precyzyjne sterowanie za pomocą interaktywnych okienek suwakowych z automatycznym przeliczaniem pozycji na kwadratemilisekundy (quarter-microseconds) zgodnie z protokołem Pololu Maestro.
 - Trwałość danych realizowaną poprzez lokalną bazę konfiguracyjną w formacie JSON (`servos_config.json`).
-- Bezpieczne testowanie interfejsu bez podłączonego sprzętu dzięki architekturze opartej na wzorcu **Mock (Zaślepka)**.
+- Bezpieczne testowanie interfejsu bez podłączonego sprzętu dzięki architekturze opartej na wzorcu **Mock**.
 
 ---
 
 ## 2. Architektura Systemu (Separacja Warstw)
-Aplikacja została podzielona na trzy niezależne warstwy w celu zapewnienia wysokiej skalowalności, łatwości testowania oraz elastyczności:
+Aplikacja została podzielona na trzy niezależne warstwy w celu zapewnienia wysokiej skalowalności oraz elastyczności:
 
 ### A. Warstwa Sprzętowa (`hardware.py`)
 - **Interfejs bazowy (`MaestroInterface`)**: Definiuje jednolity kontrakt dla wszystkich kontrolerów (metody `set_target` oraz `close`).

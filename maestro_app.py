@@ -109,6 +109,17 @@ class ServoWindow(tk.Toplevel):
         self.slider.config(command=self.on_slider_move)
         self.slider.pack(pady=PAD_S)
 
+    def refresh_limits(self) -> None:
+        """Updates slider limits after changes in MainWindow"""
+        self.slider.config(from_=self.servo.min_val, to=self.servo.max_val)
+
+        if self.servo.position < self.servo.min_val:
+            self.servo.position = self.servo.min_val
+            self.slider.set(self.servo.position)
+        elif self.servo.position > self.servo.max_val:
+            self.servo.position = self.servo.max_val
+            self.slider.set(self.servo.position)
+
     def on_slider_move(self, value: str) -> None:
         """Handles slider movement and updates hardware."""
         pos = int(float(value))
@@ -287,8 +298,11 @@ class MainWindow(tk.Tk):
         self.name_var.set(unique_name)
 
         self.row_widgets[self.selected_channel]['label'].config(text=servo.name)
+
         if self.selected_channel in self.servo_windows:
-            self.servo_windows[self.selected_channel].title(servo.name)
+            win = self.servo_windows[self.selected_channel]
+            win.title(servo.name)
+            win.refresh_limits()
 
         # pylint: disable=protected-access
         self.manager._save_config()
