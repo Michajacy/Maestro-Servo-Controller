@@ -4,6 +4,7 @@ Provides interfaces and implementations for serial communication.
 """
 import logging
 from typing import Any
+import config
 
 try:
     import serial
@@ -26,11 +27,11 @@ class MaestroInterface:
     def close(self) -> None:
         """Closes the connection to the hardware device."""
 
-
 class SerialMaestroController(MaestroInterface):
     """Real implementation communicating with hardware via a serial port."""
 
-    def __init__(self, port: str = "COM3", baudrate: int = 9600) -> None:
+    def __init__(self, port: str = config.DEFAULT_COM_PORT,
+                 baudrate: int = config.DEFAULT_BAUDRATE) -> None:
         if not SERIAL_AVAILABLE:
             raise ImportError("pyserial is not installed")
 
@@ -51,14 +52,13 @@ class SerialMaestroController(MaestroInterface):
         low_bits = target_qs & 0x7F
         high_bits = (target_qs >> 7) & 0x7F
 
-        command = bytes([0x84, channel, low_bits, high_bits])
+        command = bytes([config.CMD_SET_TRGT, channel, low_bits, high_bits])
         self.serial_conn.write(command)
 
     def close(self) -> None:
         """Safely closes the active serial connection."""
         if self.serial_conn and self.serial_conn.is_open:
             self.serial_conn.close()
-
 
 class MockMaestroController(MaestroInterface):
     """Mock implementation for testing. Prints bytes to the CLI."""
@@ -72,8 +72,6 @@ class MockMaestroController(MaestroInterface):
         low_bits = target_qs & 0x7F
         high_bits = (target_qs >> 7) & 0x7F
 
-        hex_cmd = f"0x84 0x{channel:02X} 0x{low_bits:02X} 0x{high_bits:02X}"
+        hex_cmd = f"0x{config.CMD_SET_TRGT:02X} 0x{channel:02X} 0x{low_bits:02X} 0x{high_bits:02X}"
 
-        # Pylint allows f-strings if we don't care about lazy evaluation,
-        # but to satisfy it fully, we use %-formatting here.
         logging.info("[Device] Channel %d -> %d us | Bytes: %s", channel, target_us, hex_cmd)

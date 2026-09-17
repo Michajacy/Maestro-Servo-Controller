@@ -1,37 +1,42 @@
 {
-    "0": {
-        "name": "abra kadabra",
-        "position": 2000,
-        "step": 50,
-        "min_val": 1000,
-        "max_val": 2000
+    "settings": {
+        "hw_mode": "Mock"
     },
-    "1": {
-        "name": "New Servo",
-        "position": 1500,
-        "step": 50,
-        "min_val": 1000,
-        "max_val": 2000
-    },
-    "2": {
-        "name": "New Servo 1",
-        "position": 1500,
-        "step": 50,
-        "min_val": 1000,
-        "max_val": 2000
-    },
-    "3": {
-        "name": "New Servo 2",
-        "position": 1500,
-        "step": 50,
-        "min_val": 1000,
-        "max_val": 2000
-    },
-    "4": {
-        "name": "New Servo 3",
-        "position": 2000,
-        "step": 50,
-        "min_val": 1000,
-        "max_val": 2000
+    "servos": {
+        "0": {
+            "name": "abra kadabra",
+            "position": 2000,
+            "step": 50,
+            "min_val": 1000,
+            "max_val": 2000
+        },
+        "1": {
+            "name": "New Servo",
+            "position": 1500,
+            "step": 50,
+            "min_val": 1000,
+            "max_val": 2000
+        },
+        "2": {
+            "name": "New Servo 1",
+            "position": 1500,
+            "step": 50,
+            "min_val": 1000,
+            "max_val": 2000
+        },
+        "3": {
+            "name": "New Servo 2",
+            "position": 1500,
+            "step": 50,
+            "min_val": 1000,
+            "max_val": 2000
+        },
+        "4": {
+            "name": "New Servo 3",
+            "position": 1500,
+            "step": 500,
+            "min_val": 1000,
+            "max_val": 2000
+        }
     }
 }
