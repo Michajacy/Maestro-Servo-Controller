@@ -278,6 +278,9 @@ class MainWindow(tk.Tk):
             messagebox.showwarning(config.MSG_WARN_TITLE, config.MSG_WARN_TEXT, parent=self)
             return
 
+        if not self._validate_servo_inputs():
+            return
+
         new_servo.step = self.step_var.get()
         new_servo.min_val = self.min_var.get()
         new_servo.max_val = self.max_var.get()
